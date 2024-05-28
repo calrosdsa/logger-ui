@@ -1,0 +1,3 @@
+interface Operation {
+    name:string
+}
