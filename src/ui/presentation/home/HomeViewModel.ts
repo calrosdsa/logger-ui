@@ -1,9 +1,9 @@
 "use client";
+import { LogLevel } from "@/data/model/dto/log/LogLevel";
 import { LogRepository } from "@/data/repository/log/LogRepository";
 import { ItemConverterImpl } from "@/domain/converters/ItemConverterImpl";
 import moment from "moment";
 import { ChangeEvent, useEffect, useState } from "react";
-import { LogLevel } from "react-virtuoso";
 
 export const HomeViewModel = () => {
   const [serviceNames, setServiceNames] = useState<Item[]>([]);
@@ -13,8 +13,8 @@ export const HomeViewModel = () => {
   const [logQueryParameters, setLogQueryParamenters] = useState({
     service_name: "",
     operation_name: "",
-    start_time_min: "2024-05-27T13:20:50.52Z",
-    start_time_max: "2024-05-30T07:20:50.52Z",
+    start_time_min: moment().subtract(1,"days").format(),
+    start_time_max: moment().format(),
     num_traces: "100",
     severity_number: "0",
   });
@@ -32,22 +32,33 @@ export const HomeViewModel = () => {
   }
 
   const getLogs = async () => {
-    if (logQueryParameters == null) return;
-    const body: LogQueryParameters = {
-      service_name: logQueryParameters.service_name,
+    try{
+
+      if (logQueryParameters == null) return;
+      const body: LogQueryParameters = {
+        service_name: logQueryParameters.service_name,
       operation_name: logQueryParameters.operation_name,
       start_time_min: logQueryParameters.start_time_min,
       start_time_max: logQueryParameters.start_time_max,
       num_traces: Number(logQueryParameters.num_traces),
       severity_number: Number(logQueryParameters.severity_number),
+      should_fetch_all:logQueryParameters.operation_name == "All"
     };
     const data = await logRepository.GetLogs(body);
+    console.log(data)
     setLogRecords(data);
     setLogRecordsTemp(data);
+  }catch(err){
+    console.log(err)
+  }
   };
 
   const applyFilterParams = () =>{
     getLogs()
+    setLogQueryParamenters({
+      ...logQueryParameters,
+      severity_number:"0"
+    })
   }
 
   const getOperatonsName = async (serviceName: string) => {
@@ -55,7 +66,8 @@ export const HomeViewModel = () => {
       service_name: serviceName,
     };
     const data = await logRepository.GetOperations(body);
-    setOperationNames(data);
+    const n = [{name:"All",value:"All"},...data]
+    setOperationNames(n);
   };
 
   const onChangeLogQueryParams = (
@@ -66,7 +78,7 @@ export const HomeViewModel = () => {
       [e.target.name]: e.target.value,
     });
     if (e.target.name == "service_name") {
-      if (e.target.value != "") {
+      if (e.target.value != "" && e.target.value != "All") {
         getOperatonsName(e.target.value);
       }
     }
@@ -86,8 +98,11 @@ export const HomeViewModel = () => {
 
   const filterLogsByLevel = (level:LogLevel) =>{
     console.log("LENGHT",logRecords.length,"LEVEL",level)
-    if(logRecordsTemp.length == 0 || level == 0)  return
-    const n = logRecordsTemp.filter(item=>item.severity_number == level)
+    if(logRecordsTemp.length == 0)  return
+    let n:LogRecord[] = logRecordsTemp
+    if(level != LogLevel.ALL){  
+      n = logRecordsTemp.filter(item=>item.severity_number == level)
+    }
     setLogRecords(n)
   }
 
@@ -96,9 +111,9 @@ export const HomeViewModel = () => {
     getLogsLevels()
   }, []);
 
-  useEffect(()=>{
-    filterLogsByLevel(Number(logQueryParameters.severity_number))
-  },[logRecordsTemp])
+  // useEffect(()=>{
+  //   filterLogsByLevel(Number(logQueryParameters.severity_number))
+  // },[logRecordsTemp])
 
   return {
     state: {

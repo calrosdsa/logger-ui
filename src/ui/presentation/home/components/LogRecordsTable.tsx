@@ -7,7 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { TableVirtuoso, TableComponents } from "react-virtuoso";
-import { Typography } from "@mui/material";
+import { Chip, Typography } from "@mui/material";
 import moment from "moment";
 import SeeMore from "@/ui/shared/text/SeeMore";
 import { LogLevel } from "@/data/model/dto/log/LogLevel";
@@ -30,7 +30,7 @@ const VirtuosoTableComponents: TableComponents<LogRecord> = {
       sx={{ borderCollapse: "separate", tableLayout: "fixed" }}
     />
   ),
-  TableRow: ({ item: _item, ...props }) => <TableRow {...props} />,
+  TableRow: ({ item: _item, ...props }) => <TableRow {...props} sx={{padding:0,margin:0}} />,
   TableBody:TableBodyV
 };
 
@@ -38,10 +38,18 @@ const VirtuosoTableComponents: TableComponents<LogRecord> = {
 function fixedHeaderContent() {
   return (
     <TableRow>
+       <TableCell
+          variant="head"
+          sx={{
+            backgroundColor: "background.paper",
+            width:45
+          }}
+        ></TableCell>
         <TableCell
           variant="head"
           sx={{
             backgroundColor: "background.paper",
+            width:170
           }}
         >Datetime</TableCell>
         <TableCell
@@ -54,8 +62,15 @@ function fixedHeaderContent() {
           variant="head"
           sx={{
             backgroundColor: "background.paper",
+            width:100
           }}
         >Log Level</TableCell>
+          <TableCell
+          variant="head"
+          sx={{
+            backgroundColor: "background.paper",
+          }}
+        >Tags</TableCell>
     </TableRow>
   );
 }
@@ -63,6 +78,11 @@ function fixedHeaderContent() {
 function rowContent(_index: number, logRecord: LogRecord) {
   return (
     <React.Fragment>
+      <TableCell>
+        <Typography variant="body2" fontSize={13}>
+        {_index +1}.-
+        </Typography>
+        </TableCell>
       <TableCell
       //   align={column.numeric || false ? 'right' : 'left'}
       >
@@ -70,9 +90,10 @@ function rowContent(_index: number, logRecord: LogRecord) {
           {moment(logRecord.time_unix_nano / 1e6).format("yyyy-MM-DD HH:mm:ss")}
         </Typography>
       </TableCell>
-      <TableCell sx={{width:"100%"}}>
+      <TableCell>
+        <Typography></Typography>
       <SeeMore
-      text={logRecord.Body}
+      text={logRecord.body}
       maxLength={110}
       />
       </TableCell>
@@ -90,11 +111,23 @@ function rowContent(_index: number, logRecord: LogRecord) {
             <Typography color="red" variant="body2" fontSize={12} fontWeight={600}>ERROR</Typography>    
         }
         {logRecord.severity_number == LogLevel.WARN &&
-            <Typography color="yellow" variant="body2" fontSize={12} fontWeight={600}>WARN</Typography>    
+            <Typography color="orange" variant="body2" fontSize={12} fontWeight={600}>WARN</Typography>    
         }
          {logRecord.severity_number == LogLevel.INFO &&
             <Typography color="green" variant="body2" fontSize={12} fontWeight={600}>INFO</Typography>    
         }
+      </TableCell>
+
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+        {logRecord.attributes.map((item,idx)=>{
+          return (
+            <div key={idx}>
+              <Chip size="small" label={`${item.key}: ${item.v_str}`} variant="outlined" />
+            </div>
+          )
+        })}
+        </div>
       </TableCell>
     </React.Fragment>
   );
@@ -106,7 +139,7 @@ const  LogRecordsTable=({
   logRecords: LogRecord[];
 }) => {
   return (
-    <Paper style={{ height: "80vh", width: "100%" }}>
+    <Paper style={{ height: "85vh", width: "100%" }}>
       <TableVirtuoso
         data={logRecords}
         components={VirtuosoTableComponents}

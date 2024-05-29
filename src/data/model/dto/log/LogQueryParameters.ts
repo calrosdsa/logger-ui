@@ -5,4 +5,5 @@ interface LogQueryParameters {
     start_time_max:string
     num_traces:number
     severity_number:number
+    should_fetch_all:boolean
 }

@@ -46,9 +46,7 @@ export default function FilterSidebar(props: Props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
 
-  const disabledButton =
-    props.logQueryParameters.service_name == "" ||
-    props.logQueryParameters.operation_name == "";
+  const disabledButton = props.logQueryParameters.service_name == "" || props.logQueryParameters.operation_name == "";
 
   const handleDrawerClose = () => {
     setIsClosing(true);
@@ -81,7 +79,7 @@ export default function FilterSidebar(props: Props) {
           onChange={(e) => props.onChangeLogQueryParams(e)}
           items={props.serviceNames}
         />
-        {props.logQueryParameters.service_name != "" && (
+        {(props.logQueryParameters.service_name != "") && (
           <CustomTextField
             fullWidth
             label="Operation Name"

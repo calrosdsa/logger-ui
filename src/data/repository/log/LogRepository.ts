@@ -23,8 +23,10 @@ export const LogRepository= ()=> {
 
     const GetLogs = async(body:LogQueryParameters):Promise<LogRecord[]> =>{
         const res =await dataSource.GetLogs(body)
-        const data = await res.json()
-        return data
+        if (!res.ok) {
+            throw new Error("FAIL TO FETCH LOGS")
+        }
+        return res.json()
     }
 
     const GetServiceNames = async():Promise<Item[]>=>{

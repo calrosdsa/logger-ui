@@ -23,7 +23,9 @@ export const LogRecords = (props: Props) => {
     <Container>
 
         <div className="pb-3">
+          {/* {prop} */}
       <CustomTextField
+        disabled={props.logRecords.length == 0 && props.logQueryParameters.severity_number == "0"}
         label="Log level"
         select
         sx={{width:150}}
